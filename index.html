@@ -10,12 +10,73 @@
 </head>
 <body>
 
+<div id="modalAviso" style="
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+">
+    <div style="
+        background: #181818;
+        color: #fff;
+        border-radius: 12px;
+        max-width: 340px;
+        width: 90%;
+        padding: 28px 18px 18px 18px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+        position: relative;
+        text-align: center;
+        font-family: Arial, sans-serif;
+    ">
+        <button id="fecharAviso" style="
+            position: absolute;
+            top: 10px; right: 14px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+        ">&times;</button>
+        <h2 style="margin: 0 0 8px 0; font-size: 2em; font-weight: bold;">Aviso</h2>
+        <div style="margin-bottom: 10px; font-size: 1.1em; color: #f43f5e; font-weight: bold;">
+            Colaboradores Máquinas Furlan
+        </div>
+        <div style="margin-bottom: 18px; color: #fff;">
+            Aviso a todos colaboradores, que este site foi desenvolvido apenas para aqueles que precisam de ajuda na hora de for encontrar o código de um material específico, todos os cadastros de materiais foram retirados do banco de dados dos cadastros do DebX.
+        </div>
+        <button id="btnFecharAviso" style="
+            width: 100%;
+            background: #fff;
+            color: #181818;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 0;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        ">Fechar</button>
+    </div>
+</div>
+<script>
+    document.getElementById('btnFecharAviso').onclick =
+    document.getElementById('fecharAviso').onclick = function() {
+        document.getElementById('modalAviso').style.display = 'none';
+    };
+    setTimeout(function() {
+        document.getElementById('modalAviso').style.display = 'none';
+    }, 10000);
+</script>
+
 <header id="siteHeader" style="display: none;">
     <h1>Bem-vindo a Gestão de Materiais</h1>
     <button id="themeToggle">Alternar Tema</button>
 </header>
 
-<!-- Tela de Login -->
 <section id="loginScreen" class="login-screen">
     <div class="login-card">
         <h2>Login</h2>
@@ -27,8 +88,6 @@
         </form>
     </div>
 </section>
-
-<!-- Conteúdo Principal -->
 <main style="display: none;">
     <section>
         <h2>Opções de Acesso</h2>
@@ -37,19 +96,8 @@
             <button id="materialRequestBtn">📦 Requisições de Materiais</button>
             <button id="materialRegisterBtn">➕ Cadastro de Materiais</button>
         </div>
-        <!-- Formulário acessível para adicionar material -->
-<form id="materialFormQuick">
-  <label for="materialCodeQuick" class="sr-only">Código do Material</label>
-  <input type="text" id="materialCodeQuick" placeholder="Código" required autocomplete="off" />
-
-  <label for="materialNameQuick" class="sr-only">Nome do Material</label>
-  <input type="text" id="materialNameQuick" placeholder="Nome" required autocomplete="off" />
-
-  <button type="submit" id="addBtnQuick">Adicionar</button>
-</form>
     </section>
 
-    <!-- Cadastro de Materiais -->
     <section id="materialRegistration" aria-label="Cadastro de Material" style="display:none;">
         <h2>Cadastro de Material</h2>
         <form id="materialForm">
@@ -57,15 +105,18 @@
             <input type="text" id="materialName" placeholder="Nome do Material" required>
             <button type="submit">Adicionar Material</button>
         </form>
-        <!-- Upload CSV -->
-        <label class="file-upload">
-            <input type="file" id="importCsvInput" accept=".csv">
-            📄 Escolher arquivo CSV
-        </label>
+
+    
+        <button type="button" id="importCsvFromNetwork" style="margin-top:10px;font-weight:bold;">
+            📄 Importar CSV da Rede
+        </button>
+        <input type="file" id="importCsvInput" accept=".csv" style="display:none;">
         <span id="fileName">Nenhum arquivo escolhido</span>
+        <br>
+        <a id="networkFolderLink" href="file:///Y:/Matheus%20-%20Ferramentas" style="display:none;"></a>
+        <p style="margin-top:8px;color:#888;">Clique em "Importar CSV da Rede" para abrir a pasta de materiais e importar o arquivo CSV atualizado.</p>
     </section>
 
-    <!-- Lista de Materiais -->
     <section id="materialList">
         <h2>Lista de Materiais</h2>
         <div id="materialsCount" class="materials-count">
@@ -101,6 +152,19 @@
     <div id="toast" class="toast"></div>
 </main>
 
+<script>
+    
+    document.getElementById('importCsvFromNetwork').onclick = function() {
+        document.getElementById('networkFolderLink').click();
+        setTimeout(function() {
+            document.getElementById('importCsvInput').click();
+        }, 1000);
+    };
+    document.getElementById('importCsvInput').addEventListener('change', function(e) {
+        var fileName = e.target.files[0] ? e.target.files[0].name : 'Nenhum arquivo escolhido';
+        document.getElementById('fileName').textContent = fileName;
+    });
+</script>
 <script src="js/main.js"></script>
 </body>
 </html>
