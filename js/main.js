@@ -71,7 +71,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value.trim();
         selectors.loginError.textContent = '';
-        if (username === 'Furlan' && password === 'Furl@n') {
+       
+        if (
+            (username === 'Furlan' || username === 'furlan') &&
+            (password === 'Furl@n' || password === 'furl@n')
+        ) {
             selectors.loginScreen.style.display = 'none';
             selectors.mainContent.style.display = 'block';
             selectors.siteHeader.style.display = 'block';
@@ -105,12 +109,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     const lines = evt.target.result.split(/\r?\n/);
                     const materials = localStorageUtils.getMaterials();
                     lines.forEach(line => {
-                        // Suporta CSV separado por vírgula ou ponto e vírgula
+            
                         let columns = line.split(';');
                         if (columns.length < 2) columns = line.split(',');
-                        if (columns.length < 2) return; // ignora linhas inválidas
+                        if (columns.length < 2) return;
 
-                        // Remove aspas e espaços extras
+                        
                         const code = columns[0].replace(/(^"|"$)/g, '').trim();
                         const name = columns[1].replace(/(^"|"$)/g, '').trim();
 
@@ -131,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Excluir todos
+   
     if (selectors.deleteAllBtn) {
         selectors.deleteAllBtn.addEventListener('click', () => {
             if (confirm('Tem certeza que deseja excluir todos os materiais?')) {
@@ -141,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-    // Excluir inativos
+   
     if (selectors.deleteAllInativosBtn) {
         selectors.deleteAllInativosBtn.addEventListener('click', () => {
             if (confirm('Excluir todos os materiais com nome "Inativo" ou "Inativos"?')) {
@@ -224,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    
     function updateView() {
         selectors.materialRegistration.style.display = currentAccess === 'cadastro' ? 'block' : 'none';
         selectors.materialList.style.display = 'block';
@@ -232,7 +235,6 @@ document.addEventListener('DOMContentLoaded', function () {
         renderMaterials();
     }
 
-  
     function initApp() {
         updateMaterialsCount();
         updateView();
@@ -252,7 +254,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    
     function updateMaterialsCount() {
         if (selectors.materialsCount) {
             const materials = localStorageUtils.getMaterials();
@@ -260,7 +261,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-   
     function renderMaterials() {
         let materials = localStorageUtils.getMaterials();
         const search = selectors.searchInput.value.trim().toLowerCase();
@@ -319,7 +319,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    
     window.editMaterial = function(index) {
         editingIndex = index;
         renderMaterials();
