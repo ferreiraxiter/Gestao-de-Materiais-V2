@@ -1,563 +1,412 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Lógica de login
-    const loginForm = document.getElementById('loginForm');
-    const loginError = document.getElementById('loginError');
-    const loginScreen = document.getElementById('loginScreen');
-    const mainContent = document.querySelector('main');
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            loginError.textContent = '';
-
-            if (username === 'Furlan' && password === 'Furl@n') {
-                loginScreen.style.display = 'none';
-                mainContent.style.display = 'block';
-                initApp(); // Inicializa o app após login
-            } else {
-                loginError.textContent = 'Usuário ou senha incorretos';
-            }
-        });
-    }
-});
-
-// Funções para manipulação de materiais no localStorage
-function getMaterials() {
-    return JSON.parse(localStorage.getItem('materials') || '[]');
-}
-function saveMaterials(materials) {
-    localStorage.setItem('materials', JSON.stringify(materials));
-}
-function addMaterial(material) {
-    const materials = getMaterials();
-    materials.push(material);
-    saveMaterials(materials);
-}
-function updateMaterial(index, updatedMaterial) {
-    const materials = getMaterials();
-    materials[index] = updatedMaterial;
-    saveMaterials(materials);
-}
-function deleteMaterial(index) {
-    const materials = getMaterials();
-    materials.splice(index, 1);
-    saveMaterials(materials);
-}
-
-// Inicialização do app após login
-function initApp() {
-    // Seletores dos elementos
-    const materialForm = document.getElementById('materialForm');
-    const materialCode = document.getElementById('materialCode');
-    const materialName = document.getElementById('materialName');
-    const materialsTableBody = document.getElementById('materialsTableBody');
-    const purchaseRequestBtn = document.getElementById('purchaseRequestBtn');
-    const materialRequestBtn = document.getElementById('materialRequestBtn');
-    const materialRegistration = document.getElementById('materialRegistration');
-    const materialList = document.getElementById('materialList');
-    const materialRegisterBtn = document.getElementById('materialRegisterBtn');
-    const importCsvInput = document.getElementById('importCsvInput');
-    const prevPageBtn = document.getElementById('prevPageBtn');
-    const nextPageBtn = document.getElementById('nextPageBtn');
-    const pageInfo = document.getElementById('pageInfo');
-    const deleteAllBtn = document.getElementById('deleteAllBtn');
-    const deleteAllInativosBtn = document.getElementById('deleteAllInativosBtn');
-    const sortAZBtn = document.getElementById('sortAZBtn');
-    const searchForm = document.getElementById('searchForm');
-    const clearSearchBtn = document.getElementById('clearSearchBtn');
+document.addEventListener('DOMContentLoaded', function () {
+    const selectors = {
+        loginForm: document.getElementById('loginForm'),
+        loginError: document.getElementById('loginError'),
+        loginScreen: document.getElementById('loginScreen'),
+        mainContent: document.querySelector('main'),
+        siteHeader: document.getElementById('siteHeader'),
+        logoutBtn: document.getElementById('logoutBtn'),
+        themeToggle: document.getElementById('themeToggle'),
+        materialForm: document.getElementById('materialForm'),
+        materialCode: document.getElementById('materialCode'),
+        materialName: document.getElementById('materialName'),
+        materialsTableBody: document.getElementById('materialsTableBody'),
+        purchaseRequestBtn: document.getElementById('purchaseRequestBtn'),
+        materialRequestBtn: document.getElementById('materialRequestBtn'),
+        materialRegistration: document.getElementById('materialRegistration'),
+        materialList: document.getElementById('materialList'),
+        materialRegisterBtn: document.getElementById('materialRegisterBtn'),
+        importCsvInput: document.getElementById('importCsvInput'),
+        fileName: document.getElementById('fileName'),
+        prevPageBtn: document.getElementById('prevPageBtn'),
+        nextPageBtn: document.getElementById('nextPageBtn'),
+        pageInfo: document.getElementById('pageInfo'),
+        deleteAllBtn: document.getElementById('deleteAllBtn'),
+        deleteAllInativosBtn: document.getElementById('deleteAllInativosBtn'),
+        sortAZBtn: document.getElementById('sortAZBtn'),
+        searchForm: document.getElementById('searchForm'),
+        clearSearchBtn: document.getElementById('clearSearchBtn'),
+        toast: document.getElementById('toast'),
+        searchInput: document.getElementById('searchInput'),
+        materialsCount: document.getElementById('materialsCount'),
+        actionsArea: document.getElementById('actionsArea'),
+    };
 
     let editingIndex = null;
-    let currentAccess = 'lista'; // 'cadastro' ou 'lista'
+    let currentAccess = 'lista';
     let currentPage = 1;
-    let itemsPerPage = 30; // valor fixo
-
-    // Variáveis para ordenação
+    const itemsPerPage = 30;
     let sortField = 'code';
     let sortAsc = true;
 
-    // Atualiza o contador de materiais SEMPRE com o total geral
-    function updateMaterialsCount() {
-        const countDiv = document.getElementById('materialsCount');
-        if (countDiv) {
-            const materials = getMaterials();
-            countDiv.textContent = `Total de materiais: ${materials.length}`;
+    // Troca de abas
+    if (selectors.purchaseRequestBtn) {
+        selectors.purchaseRequestBtn.addEventListener('click', () => {
+            currentAccess = 'solicitacoes';
+            updateView();
+            animateMainTransition();
+        });
+    }
+    if (selectors.materialRequestBtn) {
+        selectors.materialRequestBtn.addEventListener('click', () => {
+            currentAccess = 'lista';
+            updateView();
+            animateMainTransition();
+        });
+    }
+    if (selectors.materialRegisterBtn) {
+        selectors.materialRegisterBtn.addEventListener('click', () => {
+            currentAccess = 'cadastro';
+            updateView();
+            animateMainTransition();
+        });
+    }
+
+    // Login
+    if (selectors.loginForm) {
+        selectors.loginForm.addEventListener('submit', handleLogin);
+    }
+    function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        selectors.loginError.textContent = '';
+       
+        if (
+            (username === 'Furlan' || username === 'furlan') &&
+            (password === 'Furl@n' || password === 'furl@n')
+        ) {
+            selectors.loginScreen.style.display = 'none';
+            selectors.mainContent.style.display = 'block';
+            selectors.siteHeader.style.display = 'block';
+            initApp();
+            animateMainTransition();
+        } else {
+            selectors.loginError.textContent = 'Usuário ou senha incorretos';
+        }
+    }
+    if (selectors.logoutBtn) {
+        selectors.logoutBtn.addEventListener('click', () => {
+            selectors.mainContent.style.display = 'none';
+            selectors.siteHeader.style.display = 'none';
+            selectors.loginScreen.style.display = 'block';
+        });
+    }
+    if (selectors.themeToggle) {
+        selectors.themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+        });
+    }
+
+    // CSV Import
+    if (selectors.importCsvInput) {
+        selectors.importCsvInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectors.fileName.textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    const lines = evt.target.result.split(/\r?\n/);
+                    const materials = localStorageUtils.getMaterials();
+                    lines.forEach(line => {
+            
+                        let columns = line.split(';');
+                        if (columns.length < 2) columns = line.split(',');
+                        if (columns.length < 2) return;
+
+                        
+                        const code = columns[0].replace(/(^"|"$)/g, '').trim();
+                        const name = columns[1].replace(/(^"|"$)/g, '').trim();
+
+                        if (code && name) {
+                            materials.push({
+                                id: Date.now() + Math.random(),
+                                code: code,
+                                name: name,
+                                date: new Date().toLocaleDateString('pt-BR')
+                            });
+                        }
+                    });
+                    localStorageUtils.saveMaterials(materials);
+                    renderMaterials();
+                };
+                reader.readAsText(file);
+            }
+        });
+    }
+
+   
+    if (selectors.deleteAllBtn) {
+        selectors.deleteAllBtn.addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja excluir todos os materiais?')) {
+                localStorageUtils.saveMaterials([]);
+                renderMaterials();
+                showToastMessage('Todos os materiais foram excluídos!', 'success');
+            }
+        });
+    }
+   
+    if (selectors.deleteAllInativosBtn) {
+        selectors.deleteAllInativosBtn.addEventListener('click', () => {
+            if (confirm('Excluir todos os materiais com nome "Inativo" ou "Inativos"?')) {
+                let materials = localStorageUtils.getMaterials();
+                materials = materials.filter(m => !/inativo/i.test(m.name));
+                localStorageUtils.saveMaterials(materials);
+                renderMaterials();
+                showToastMessage('Materiais inativos excluídos!', 'success');
+            }
+        });
+    }
+
+    const localStorageUtils = {
+        getMaterials: () => JSON.parse(localStorage.getItem('materials') || '[]'),
+        saveMaterials: (materials) => localStorage.setItem('materials', JSON.stringify(materials)),
+        addMaterial: (material) => {
+            const materials = localStorageUtils.getMaterials();
+            materials.push(material);
+            localStorageUtils.saveMaterials(materials);
+        },
+        updateMaterial: (index, updatedMaterial) => {
+            const materials = localStorageUtils.getMaterials();
+            materials[index] = updatedMaterial;
+            localStorageUtils.saveMaterials(materials);
+        },
+        deleteMaterial: (index) => {
+            const materials = localStorageUtils.getMaterials();
+            materials.splice(index, 1);
+            localStorageUtils.saveMaterials(materials);
+        },
+    };
+
+    function showToastMessage(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.textContent = message;
+        toast.className = `show-toast ${type}`;
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-30px)';
+        }, 2200);
+    }
+
+    if (selectors.materialForm) {
+        selectors.materialForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const code = selectors.materialCode.value.trim();
+            const name = selectors.materialName.value.trim();
+            if (!code || !name) {
+                showToastMessage('Preencha todos os campos!', 'error');
+                return;
+            }
+            localStorageUtils.addMaterial({
+                id: Date.now() + Math.random(),
+                code,
+                name,
+                date: new Date().toLocaleDateString('pt-BR')
+            });
+            selectors.materialCode.value = '';
+            selectors.materialName.value = '';
+            selectors.materialCode.focus();
+            renderMaterials();
+            showToastMessage('Material adicionado com sucesso!', 'success');
+        });
+    }
+
+    // Pesquisa
+    if (selectors.searchForm) {
+        selectors.searchForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            renderMaterials();
+        });
+    }
+    if (selectors.clearSearchBtn) {
+        selectors.clearSearchBtn.addEventListener('click', function () {
+            selectors.searchInput.value = '';
+            renderMaterials();
+        });
+    }
+
+    function updateView() {
+        selectors.materialRegistration.style.display = currentAccess === 'cadastro' ? 'block' : 'none';
+        selectors.materialList.style.display = 'block';
+        selectors.actionsArea.style.display = currentAccess === 'cadastro' ? 'flex' : 'none';
+        renderMaterials();
+    }
+
+    function initApp() {
+        updateMaterialsCount();
+        updateView();
+        if (selectors.prevPageBtn) {
+            selectors.prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderMaterials();
+                }
+            });
+        }
+        if (selectors.nextPageBtn) {
+            selectors.nextPageBtn.addEventListener('click', () => {
+                currentPage++;
+                renderMaterials();
+            });
         }
     }
 
-    // Renderiza todos os materiais normalmente (com paginação real e pesquisa eficiente)
-    function renderMaterials(filteredList) {
-        let materials = filteredList || getMaterials();
-
-        // Ordenação
-        materials = materials.slice().sort((a, b) => {
-            let vA = a[sortField] || '';
-            let vB = b[sortField] || '';
-            if (sortField === 'date') {
-                return sortAsc ? vA.localeCompare(vB) : vB.localeCompare(vA);
-            }
-            return sortAsc
-                ? vA.toString().localeCompare(vB.toString(), undefined, {numeric:true})
-                : vB.toString().localeCompare(vA.toString(), undefined, {numeric:true});
-        });
-
-        const totalPages = Math.ceil(materials.length / itemsPerPage) || 1;
-        if (currentPage > totalPages) currentPage = totalPages;
-
-        const startIdx = (currentPage - 1) * itemsPerPage;
-        const endIdx = Math.min(startIdx + itemsPerPage, materials.length);
-
-        materialsTableBody.innerHTML = '';
-
-        if (materials.length === 0) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="4" style="text-align:center; color:#b91c1c; font-weight:bold;">Nenhum material cadastrado</td>`;
-            materialsTableBody.appendChild(tr);
-        } else {
-            // Pegue a lista completa para garantir o índice real
-            const allMaterials = getMaterials();
-
-            for (let idx = startIdx; idx < endIdx; idx++) {
-                const mat = materials[idx];
-                // Use o id único para encontrar o índice real
-                const realIndex = allMaterials.findIndex(m => m.id === mat.id);
-                const isEditing = editingIndex === realIndex;
-                const row = document.createElement('tr');
-                if (isEditing) row.classList.add('editing-row');
-                if (isEditing) {
-                    row.innerHTML = `
-                        <td><input type="text" id="editCode" value="${mat.code}" style="width:100px"></td>
-                        <td><input type="text" id="editName" value="${mat.name}" style="width:180px"></td>
-                        <td>${mat.date}</td>
-                        <td>
-                            <button class="actions-btn edit" onclick="saveEdit(${realIndex})">Salvar</button>
-                            <button class="actions-btn" onclick="cancelEdit()">Cancelar</button>
-                        </td>
-                    `;
-                } else {
-                    row.innerHTML = `
-                        <td>${mat.code}</td>
-                        <td>${mat.name}</td>
-                        <td>${mat.date}</td>
-                        <td>
-                            ${
-                                currentAccess === 'cadastro'
-                                ? `
-                                    <button class="actions-btn edit" onclick="editMaterial(${realIndex})">Editar</button>
-                                    <button class="actions-btn" onclick="removeMaterial(${realIndex})">Excluir</button>
-                                `
-                                : ''
-                            }
-                            ${
-                                currentAccess === 'lista'
-                                ? `<button class="actions-btn" onclick="copyCode('${mat.code}')">Copiar código</button>`
-                                : ''
-                            }
-                        </td>
-                    `;
-                }
-                materialsTableBody.appendChild(row);
-                // Foco automático ao editar
-                if (isEditing) setTimeout(() => row.querySelector('#editCode').focus(), 100);
-            }
+    function updateMaterialsCount() {
+        if (selectors.materialsCount) {
+            const materials = localStorageUtils.getMaterials();
+            selectors.materialsCount.textContent = `Total de materiais: ${materials.length}`;
         }
+    }
 
-        // Paginação
-        pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
-        prevPageBtn.style.display = currentPage > 1 ? '' : 'none';
-        nextPageBtn.style.display = currentPage < totalPages ? '' : 'none';
+    function renderMaterials() {
+        let materials = localStorageUtils.getMaterials();
+        const search = selectors.searchInput.value.trim().toLowerCase();
+        if (search) {
+            materials = materials.filter(m => m.name.toLowerCase().includes(search));
+        }
+        const sortedMaterials = sortMaterials(materials);
+        const paginatedMaterials = paginateMaterials(sortedMaterials);
 
+        selectors.materialsTableBody.innerHTML = '';
+        if (paginatedMaterials.length === 0) {
+            renderEmptyMessage();
+        } else {
+            renderMaterialRows(paginatedMaterials, sortedMaterials);
+        }
+        updatePaginationInfo(sortedMaterials.length);
         updateMaterialsCount();
     }
 
-    // Adiciona ou edita material
-    materialForm.onsubmit = function(e) {
-        e.preventDefault();
-        const code = materialCode.value.trim();
-        const name = materialName.value.trim();
-        if (!code || !name) {
-            showToast('Erro ao adicionar material!', 'error');
-            return;
-        }
+    function sortMaterials(materials) {
+        return materials.slice().sort((a, b) => {
+            const vA = a[sortField] || '';
+            const vB = b[sortField] || '';
+            return sortAsc
+                ? vA.toString().localeCompare(vB.toString(), undefined, { numeric: true })
+                : vB.toString().localeCompare(vA.toString(), undefined, { numeric: true });
+        });
+    }
 
-        // Validação para evitar códigos duplicados ao adicionar/editar
-        const materials = getMaterials();
-        if (materials.some((m, i) => m.code === code && i !== editingIndex)) {
-            showToast('Já existe um material com este código!', 'error');
-            return;
-        }
+    function paginateMaterials(materials) {
+        const totalPages = Math.ceil(materials.length / itemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        const startIdx = (currentPage - 1) * itemsPerPage;
+        const endIdx = Math.min(startIdx + itemsPerPage, materials.length);
+        return materials.slice(startIdx, endIdx);
+    }
 
-        // Ao adicionar material manualmente:
-        const material = {
-            id: Date.now() + Math.random(), // ID único
-            code,
-            name,
-            date: new Date().toLocaleDateString()
-        };
+    function renderEmptyMessage() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="4" style="text-align:center; color:#b91c1c; font-weight:bold;">Nenhum material cadastrado</td>`;
+        selectors.materialsTableBody.appendChild(tr);
+    }
 
-        if (editingIndex !== null) {
-            updateMaterial(editingIndex, material);
-            editingIndex = null;
-            showToast('Material editado com sucesso!', 'success');
-        } else {
-            addMaterial(material);
-            showToast('Material adicionado com sucesso!', 'success');
-        }
-        materialForm.reset();
-        currentPage = 1;
-        renderMaterials();
-    };
+    function renderMaterialRows(paginatedMaterials, allMaterials) {
+        paginatedMaterials.forEach((mat, idx) => {
+            const realIndex = allMaterials.findIndex((m) => m.id === mat.id);
+            const isEditing = editingIndex === realIndex;
+            const row = document.createElement('tr');
+            row.classList.toggle('editing-row', isEditing);
 
-    // Editar material inline
+            row.innerHTML = isEditing
+                ? renderEditingRow(mat, realIndex)
+                : renderDefaultRow(mat, realIndex);
+
+            selectors.materialsTableBody.appendChild(row);
+        });
+    }
+
     window.editMaterial = function(index) {
         editingIndex = index;
         renderMaterials();
-        // Foco automático ao editar
-        setTimeout(() => {
-            const input = document.getElementById('editCode');
-            if (input) input.focus();
-        }, 100);
     };
-
     window.saveEdit = function(index) {
         const code = document.getElementById('editCode').value.trim();
         const name = document.getElementById('editName').value.trim();
-        if (!code || !name) {
-            showToast('Preencha todos os campos!', 'error');
-            return;
+        let materials = localStorageUtils.getMaterials();
+        if (code && name) {
+            materials[index].code = code;
+            materials[index].name = name;
+            localStorageUtils.saveMaterials(materials);
+            showToastMessage('Material editado com sucesso!', 'success');
+        } else {
+            showToastMessage('Preencha todos os campos!', 'error');
         }
-        // Validação para evitar códigos duplicados ao editar
-        const materials = getMaterials();
-        if (materials.some((m, i) => m.code === code && i !== index)) {
-            showToast('Já existe um material com este código!', 'error');
-            return;
-        }
-        // Atualiza a data para o momento da edição
-        updateMaterial(index, { ...materials[index], code, name, date: new Date().toLocaleDateString() });
         editingIndex = null;
-        showToast('Material editado com sucesso!', 'success');
         renderMaterials();
     };
-
     window.cancelEdit = function() {
         editingIndex = null;
         renderMaterials();
     };
-
-    // Remover material com confirmação mostrando nome/código
     window.removeMaterial = function(index) {
-        const materials = getMaterials();
-        const mat = materials[index];
-        if (confirm(`Deseja excluir o material "${mat.name}" (Código: ${mat.code})?`)) {
-            deleteMaterial(index);
-            currentPage = 1;
-            showToast('Material excluído com sucesso!', 'success');
+        if (confirm('Deseja excluir este material?')) {
+            localStorageUtils.deleteMaterial(index);
+            editingIndex = null;
             renderMaterials();
+            showToastMessage('Material excluído com sucesso!', 'success');
         }
     };
-
-    // Copiar código do material
     window.copyCode = function(code) {
-        navigator.clipboard.writeText(code).then(() => {
-            showToast('Código copiado!', 'success');
-        });
+        navigator.clipboard.writeText(code);
+        showToastMessage('Código copiado!', 'success');
     };
 
-    // Alterna entre as seções e controla visibilidade dos botões e do campo de pesquisa
-    purchaseRequestBtn.onclick = function() {
-        materialRegistration.style.display = 'none';
-        materialList.style.display = '';
-        importCsvInput.style.display = 'none';
-        deleteAllBtn.style.display = 'none';
-        searchForm.style.display = ''; // Mostra o campo de pesquisa
-        currentPage = 1;
-        renderMaterials();
-    };
-
-    materialRequestBtn.onclick = function() {
-        currentAccess = 'lista';
-        materialRegistration.style.display = 'none';
-        materialList.style.display = '';
-        importCsvInput.style.display = 'none';
-        deleteAllBtn.style.display = 'none';
-        searchForm.style.display = ''; // Mostra o campo de pesquisa
-        currentPage = 1;
-        renderMaterials();
-    };
-
-    materialRegisterBtn.onclick = function() {
-        currentAccess = 'cadastro';
-        materialRegistration.style.display = '';
-        materialList.style.display = '';
-        importCsvInput.style.display = '';
-        deleteAllBtn.style.display = '';
-        searchForm.style.display = 'none'; // Esconde o campo de pesquisa
-        currentPage = 1;
-        renderMaterials();
-    };
-
-    // Paginação
-    prevPageBtn.onclick = function() {
-        if (currentPage > 1) {
-            currentPage--;
-            renderMaterials();
-        }
-    };
-    nextPageBtn.onclick = function() {
-        const materials = getMaterials();
-        const totalPages = Math.ceil(materials.length / itemsPerPage);
-        if (currentPage < totalPages) {
-            currentPage++;
-            renderMaterials();
-        }
-    };
-
-    // Excluir todos os materiais
-    deleteAllBtn.onclick = function() {
-        if (confirm('Tem certeza que deseja excluir TODOS os materiais?')) {
-            saveMaterials([]);
-            currentPage = 1;
-            showToast('Todos os materiais foram excluídos!', 'success');
-            renderMaterials();
-        }
-    };
-
-    // Excluir todos os materiais com nome "inativo"
-    deleteAllInativosBtn.onclick = function() {
-        let materials = getMaterials();
-        const originalLength = materials.length;
-        materials = materials.filter(mat => mat.name.toLowerCase() !== 'inativo');
-        saveMaterials(materials);
-        currentPage = 1;
-        renderMaterials();
-        const removed = originalLength - materials.length;
-        if (removed > 0) {
-            showToast(`Removidos ${removed} materiais com nome "inativo".`, 'success');
-        } else {
-            showToast('Nenhum material com nome "inativo" encontrado.', 'error');
-        }
-    };
-
-    // Limpar pesquisa
-    clearSearchBtn.onclick = function() {
-        document.getElementById('searchInput').value = '';
-        currentPage = 1;
-        renderMaterials();
-    };
-
-    // Pesquisa de materiais por nome (com paginação real)
-    searchForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const termo = document.getElementById('searchInput').value.toLowerCase();
-
-        let materials = getMaterials();
-        let filtered = materials.filter(mat =>
-            mat.name.toLowerCase().includes(termo)
-        );
-
-        currentPage = 1;
-        renderMaterials(filtered);
-
-        // Paginação só aparece se houver resultados
-        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-        pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
-        prevPageBtn.style.display = currentPage > 1 ? '' : 'none';
-        nextPageBtn.style.display = currentPage < totalPages ? '' : 'none';
-
-        // Mensagem se não encontrou nenhum resultado
-        if (filtered.length === 0) {
-            materialsTableBody.innerHTML = `<tr id="noResultsMsg"><td colspan="4" style="text-align:center; color:#b91c1c; font-weight:bold;">Sem resultados de pesquisa</td></tr>`;
-        }
-    });
-
-    // Ao limpar a pesquisa, volta a mostrar todos os materiais normalmente
-    document.getElementById('searchInput').addEventListener('input', function() {
-        if (this.value.trim() === '') {
-            currentPage = 1;
-            renderMaterials();
-            prevPageBtn.style.display = '';
-            nextPageBtn.style.display = '';
-        }
-    });
-
-    // Toast de feedback visual
-    function showToast(message, type = 'success') {
-        const toast = document.getElementById('toast');
-        if (!toast) return;
-        toast.textContent = message;
-        toast.className = `toast show ${type}`;
-        setTimeout(() => {
-            toast.className = 'toast';
-        }, 2500);
+    function renderEditingRow(mat, realIndex) {
+        return `
+            <td><input type="text" id="editCode" value="${mat.code}" style="width:100px"></td>
+            <td><input type="text" id="editName" value="${mat.name}" style="width:180px"></td>
+            <td>${mat.date}</td>
+            <td>
+                <button class="actions-btn edit" onclick="saveEdit(${realIndex})">Salvar</button>
+                <button class="actions-btn" onclick="cancelEdit()">Cancelar</button>
+            </td>
+        `;
     }
 
-    document.getElementById('importCsvInput').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+    function renderDefaultRow(mat, realIndex) {
+        return `
+            <td>${mat.code}</td>
+            <td>${mat.name}</td>
+            <td>${mat.date}</td>
+            <td>
+                ${currentAccess === 'cadastro' ? renderCadastroActions(realIndex) : ''}
+                ${currentAccess !== 'cadastro' ? renderListaActions(mat.code) : ''}
+            </td>
+        `;
+    }
 
-        if (file.size > 2 * 1024 * 1024) { // Limite: 2MB
-            showToast('Arquivo muito grande! Limite de 2MB.', 'error');
-            return;
-        }
+    function renderCadastroActions(realIndex) {
+        return `
+            <button class="actions-btn edit" onclick="editMaterial(${realIndex})">Editar</button>
+            <button class="actions-btn" onclick="removeMaterial(${realIndex})">Excluir</button>
+        `;
+    }
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const lines = e.target.result.split('\n').filter(l => l.trim());
-            if (lines.length < 2) {
-                showToast('Arquivo CSV vazio ou sem dados.', 'error');
-                return;
-            }
+    function renderListaActions(code) {
+        return `<button class="actions-btn" onclick="copyCode('${code}')">Copiar código</button>`;
+    }
 
-            // Detecta separador: ; ou ,
-            let sep = ';';
-            if (lines[0].indexOf(',') > -1 && lines[0].indexOf(';') === -1) sep = ',';
+    function updatePaginationInfo(totalItems) {
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        selectors.pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+        selectors.prevPageBtn.style.display = currentPage > 1 ? '' : 'none';
+        selectors.nextPageBtn.style.display = currentPage < totalPages ? '' : 'none';
+    }
 
-            let materials = getMaterials();
-            let count = 0;
-
-            // Ignora a primeira linha (cabeçalho)
-            for (let i = 1; i < lines.length; i++) {
-                const columns = lines[i].replace('\r', '').split(sep);
-                const code = columns[0]?.replace(/"/g, '').trim();
-                const name = columns[1]?.replace(/"/g, '').trim();
-                if (code && name && !materials.some(mat => mat.code === code)) {
-                    materials.push({
-                        id: Date.now() + Math.random(),
-                        code,
-                        name,
-                        date: new Date().toLocaleDateString()
-                    });
-                    count++;
-                }
-            }
-
-            saveMaterials(materials);
-            currentPage = 1;
-            renderMaterials();
-            showToast(count > 0 ? `Importado(s) ${count} material(is)!` : 'Nenhum material novo importado.', count > 0 ? 'success' : 'error');
-        };
-        reader.readAsText(file);
-    });
-
-    // Inicializa a renderização dos materiais
+    function animateMainTransition() {
+        const main = document.querySelector('main');
+        main.style.opacity = 0;
+        main.style.transform = 'translateY(40px) scale(0.98)';
+        setTimeout(() => {
+            main.style.transition = 'opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1)';
+            main.style.opacity = 1;
+            main.style.transform = 'translateY(0) scale(1)';
+        }, 50);
+    }
+    
     renderMaterials();
-}
-// main.js
-// Função para salvar dados no localStorage
-function saveDataToLocalStorage() {
-    const table = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-    const rows = Array.from(table.rows).map(row => ({
-        name: row.cells[0].textContent,
-        file: row.cells[1].textContent
-    }));
-    localStorage.setItem('savedData', JSON.stringify(rows));
-}
-
-// Função para carregar dados do localStorage
-function loadDataFromLocalStorage() {
-    const savedData = JSON.parse(localStorage.getItem('savedData')) || [];
-    const table = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-    table.innerHTML = ''; // Limpa a tabela antes de carregar
-
-    savedData.forEach(item => {
-        const newRow = table.insertRow();
-        newRow.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.file}</td>
-            <td>
-                <button class="actions-btn edit">Editar</button>
-                <button class="danger-btn">Excluir</button>
-            </td>
-        `;
-    });
-
-    // Reaplica eventos de edição e exclusão
-    document.querySelectorAll('.danger-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            this.closest('tr').remove();
-            saveDataToLocalStorage(); // Salva após exclusão
-        });
-    });
-
-    document.querySelectorAll('.actions-btn.edit').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const row = this.closest('tr');
-            const newName = prompt('Novo nome:', row.cells[0].textContent);
-            if (newName !== null) {
-                row.cells[0].textContent = newName;
-                saveDataToLocalStorage(); // Salva após edição
-            }
-        });
-    });
-}
-
-// Carrega dados ao iniciar a página
-window.addEventListener('load', loadDataFromLocalStorage);
-
-// Salva dados após submissão do formulário
-document.getElementById('dataForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const name = document.getElementById('nameInput').value;
-    const file = document.getElementById('fileInput').files[0];
-    if (name && file) {
-        const table = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-        const newRow = table.insertRow();
-        newRow.innerHTML = `
-            <td>${name}</td>
-            <td>${file.name}</td>
-            <td>
-                <button class="actions-btn edit">Editar</button>
-                <button class="danger-btn">Excluir</button>
-            </td>
-        `;
-        document.getElementById('dataForm').reset();
-        saveDataToLocalStorage(); // Salva após adição
-    }
-});
-
-// Salva dados após exclusão
-document.addEventListener('click', function (e) {
-    if (e.target.classList.contains('danger-btn')) {
-        e.target.closest('tr').remove();
-        saveDataToLocalStorage();
-    }
-});
-document.addEventListener('DOMContentLoaded', function() {
-    // Lógica de login
-    const loginForm = document.getElementById('loginForm');
-    const loginError = document.getElementById('loginError');
-    const loginScreen = document.getElementById('loginScreen');
-    const mainContent = document.querySelector('main');
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            loginError.textContent = '';
-
-            if (username === 'Furlan' && password === 'Furl@n') {
-                loginScreen.style.display = 'none';
-                mainContent.style.display = 'block';
-                initApp(); // Inicializa o app após login
-            } else {
-                loginError.textContent = 'Usuário ou senha incorretos';
-            }
-        });
-    }
-
-    // Função de logout com transição
-    function logoutWithTransition() {
-        document.body.style.opacity = '0';
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 300);
-    }
-
-    // Lógica do botão "Sair"
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logoutWithTransition);
-    }
 });
