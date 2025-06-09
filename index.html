@@ -45,7 +45,7 @@
             Colaboradores Máquinas Furlan
         </div>
         <div style="margin-bottom: 18px; color: #fff;">
-            Aviso a todos colaboradores, que este site foi desenvolvido apenas para aqueles que precisam de ajuda na hora de for encontrar o código de um material específico, todos os cadastros de materiais foram retirados do banco de dados dos cadastros do DebX.
+            Aviso a todos colaboradores, que este site foi desenvolvido apenas para aqueles que precisam de ajuda na hora de for encontrar código de um material específico, todos os cadastros de materiais foram retirados do banco de dados dos cadastros do DebX.
         </div>
         <button id="btnFecharAviso" style="
             width: 100%;
@@ -87,7 +87,21 @@
             <div id="loginError" class="login-error"></div>
         </form>
     </div>
+    <footer style="
+        position: fixed;
+        right: 32px;
+        bottom: 24px;
+        color: #fff;
+        font-size: 1em;
+        z-index: 100;
+        text-align: right;
+        pointer-events: none;
+        user-select: none;
+    ">
+        © 2025 Ferreira - Divisão Equipamentos Indiretos.
+    </footer>
 </section>
+
 <main style="display: none;">
     <section>
         <h2>Opções de Acesso</h2>
@@ -106,7 +120,7 @@
             <button type="submit">Adicionar Material</button>
         </form>
 
-    
+        <!-- Botão personalizado para importar CSV da rede -->
         <button type="button" id="importCsvFromNetwork" style="margin-top:10px;font-weight:bold;">
             📄 Importar CSV da Rede
         </button>
@@ -153,7 +167,6 @@
 </main>
 
 <script>
-    
     document.getElementById('importCsvFromNetwork').onclick = function() {
         document.getElementById('networkFolderLink').click();
         setTimeout(function() {
