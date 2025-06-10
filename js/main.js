@@ -32,6 +32,23 @@ document.addEventListener('DOMContentLoaded', function () {
         actionsArea: document.getElementById('actionsArea'),
     };
 
+    // --- Feedback visual ---
+    function showFeedback(msg, isError = false) {
+        const el = document.getElementById('feedbackMsg');
+        if (!el) return;
+        el.textContent = msg;
+        el.style.background = isError ? '#b91c1c' : '#059669';
+        el.style.display = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+
+    // --- Indicador de carregamento ---
+    function showLoading(show = true) {
+        const spinner = document.getElementById('loadingSpinner');
+        if (!spinner) return;
+        spinner.style.display = show ? 'flex' : 'none';
+    }
+
     let editingIndex = null;
     let currentAccess = 'lista';
     let currentPage = 1;
@@ -98,26 +115,24 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // CSV Import
+    // CSV Import com loading e feedback
     if (selectors.importCsvInput) {
         selectors.importCsvInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
                 selectors.fileName.textContent = file.name;
+                showLoading(true);
                 const reader = new FileReader();
                 reader.onload = function (evt) {
                     const lines = evt.target.result.split(/\r?\n/);
                     const materials = localStorageUtils.getMaterials();
+                    let imported = 0;
                     lines.forEach(line => {
-            
                         let columns = line.split(';');
                         if (columns.length < 2) columns = line.split(',');
                         if (columns.length < 2) return;
-
-                        
                         const code = columns[0].replace(/(^"|"$)/g, '').trim();
                         const name = columns[1].replace(/(^"|"$)/g, '').trim();
-
                         if (code && name) {
                             materials.push({
                                 id: Date.now() + Math.random(),
@@ -125,35 +140,49 @@ document.addEventListener('DOMContentLoaded', function () {
                                 name: name,
                                 date: new Date().toLocaleDateString('pt-BR')
                             });
+                            imported++;
                         }
                     });
                     localStorageUtils.saveMaterials(materials);
                     renderMaterials();
+                    showLoading(false);
+                    if (imported > 0) {
+                        showFeedback('Importação concluída com sucesso!');
+                    } else {
+                        showFeedback('Nenhum material importado.', true);
+                    }
+                };
+                reader.onerror = function() {
+                    showLoading(false);
+                    showFeedback('Erro ao ler o arquivo.', true);
                 };
                 reader.readAsText(file);
             }
         });
     }
 
-   
+    // Excluir todos com confirmação e feedback
     if (selectors.deleteAllBtn) {
         selectors.deleteAllBtn.addEventListener('click', () => {
             if (confirm('Tem certeza que deseja excluir todos os materiais?')) {
                 localStorageUtils.saveMaterials([]);
                 renderMaterials();
-                showToastMessage('Todos os materiais foram excluídos!', 'success');
+                showFeedback('Todos os materiais foram excluídos!', false);
             }
         });
     }
    
+    // Excluir inativos com confirmação e feedback
     if (selectors.deleteAllInativosBtn) {
         selectors.deleteAllInativosBtn.addEventListener('click', () => {
             if (confirm('Excluir todos os materiais com nome "Inativo" ou "Inativos"?')) {
                 let materials = localStorageUtils.getMaterials();
+                const before = materials.length;
                 materials = materials.filter(m => !/inativo/i.test(m.name));
                 localStorageUtils.saveMaterials(materials);
                 renderMaterials();
-                showToastMessage('Materiais inativos excluídos!', 'success');
+                const removed = before - materials.length;
+                showFeedback(`${removed} materiais inativos excluídos!`, false);
             }
         });
     }
@@ -178,6 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
     };
 
+    // Toast antigo mantido para compatibilidade
     function showToastMessage(message, type = 'success') {
         const toast = document.getElementById('toast');
         if (!toast) return;
@@ -197,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const code = selectors.materialCode.value.trim();
             const name = selectors.materialName.value.trim();
             if (!code || !name) {
-                showToastMessage('Preencha todos os campos!', 'error');
+                showFeedback('Preencha todos os campos!', true);
                 return;
             }
             localStorageUtils.addMaterial({
@@ -210,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function () {
             selectors.materialName.value = '';
             selectors.materialCode.focus();
             renderMaterials();
-            showToastMessage('Material adicionado com sucesso!', 'success');
+            showFeedback('Material adicionado com sucesso!', false);
         });
     }
 
@@ -261,25 +291,32 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function renderMaterials() {
-        let materials = localStorageUtils.getMaterials();
-        const search = selectors.searchInput.value.trim().toLowerCase();
-        if (search) {
-            materials = materials.filter(m => m.name.toLowerCase().includes(search));
-        }
-        const sortedMaterials = sortMaterials(materials);
-        const paginatedMaterials = paginateMaterials(sortedMaterials);
+function renderMaterials() {
+    let materials = localStorageUtils.getMaterials();
+    const search = selectors.searchInput.value.trim().toLowerCase();
 
-        selectors.materialsTableBody.innerHTML = '';
-        if (paginatedMaterials.length === 0) {
-            renderEmptyMessage();
-        } else {
-            renderMaterialRows(paginatedMaterials, sortedMaterials);
-        }
-        updatePaginationInfo(sortedMaterials.length);
-        updateMaterialsCount();
+    if (search) {
+        // Divide a busca por vírgula e remove espaços extras
+        const terms = search.split(',').map(t => t.trim()).filter(Boolean);
+        materials = materials.filter(m =>
+            terms.every(term =>
+                m.name.toLowerCase().includes(term) || m.code.toLowerCase().includes(term)
+            )
+        );
     }
 
+    const sortedMaterials = sortMaterials(materials);
+    const paginatedMaterials = paginateMaterials(sortedMaterials);
+
+    selectors.materialsTableBody.innerHTML = '';
+    if (paginatedMaterials.length === 0) {
+        renderEmptyMessage();
+    } else {
+        renderMaterialRows(paginatedMaterials, sortedMaterials);
+    }
+    updatePaginationInfo(sortedMaterials.length);
+    updateMaterialsCount();
+}
     function sortMaterials(materials) {
         return materials.slice().sort((a, b) => {
             const vA = a[sortField] || '';
@@ -304,20 +341,24 @@ document.addEventListener('DOMContentLoaded', function () {
         selectors.materialsTableBody.appendChild(tr);
     }
 
-    function renderMaterialRows(paginatedMaterials, allMaterials) {
-        paginatedMaterials.forEach((mat, idx) => {
-            const realIndex = allMaterials.findIndex((m) => m.id === mat.id);
-            const isEditing = editingIndex === realIndex;
-            const row = document.createElement('tr');
-            row.classList.toggle('editing-row', isEditing);
+function renderMaterialRows(paginatedMaterials, allMaterials) {
+    paginatedMaterials.forEach((mat, idx) => {
+        const realIndex = allMaterials.findIndex((m) => m.id === mat.id);
+        const isEditing = editingIndex === realIndex;
+        const row = document.createElement('tr');
+        row.classList.toggle('editing-row', isEditing);
 
-            row.innerHTML = isEditing
-                ? renderEditingRow(mat, realIndex)
-                : renderDefaultRow(mat, realIndex);
+        if (isEditing) {
+            row.innerHTML = renderEditingRow(mat, realIndex);
+           
+        } else {
+            row.innerHTML = renderDefaultRow(mat, realIndex);
+           
+        }
 
-            selectors.materialsTableBody.appendChild(row);
-        });
-    }
+        selectors.materialsTableBody.appendChild(row);
+    });
+}
 
     window.editMaterial = function(index) {
         editingIndex = index;
@@ -331,9 +372,9 @@ document.addEventListener('DOMContentLoaded', function () {
             materials[index].code = code;
             materials[index].name = name;
             localStorageUtils.saveMaterials(materials);
-            showToastMessage('Material editado com sucesso!', 'success');
+            showFeedback('Material editado com sucesso!', false);
         } else {
-            showToastMessage('Preencha todos os campos!', 'error');
+            showFeedback('Preencha todos os campos!', true);
         }
         editingIndex = null;
         renderMaterials();
@@ -347,12 +388,12 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorageUtils.deleteMaterial(index);
             editingIndex = null;
             renderMaterials();
-            showToastMessage('Material excluído com sucesso!', 'success');
+            showFeedback('Material excluído com sucesso!', false);
         }
     };
     window.copyCode = function(code) {
         navigator.clipboard.writeText(code);
-        showToastMessage('Código copiado!', 'success');
+        showFeedback('Código copiado!', false);
     };
 
     function renderEditingRow(mat, realIndex) {
