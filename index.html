@@ -9,6 +9,23 @@
     <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
+<script>
+if (
+    window.innerWidth < 900 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#181818;color:#fff;font-size:1.5em;text-align:center;">Este sistema só pode ser acessado por computadores.<br>Por favor, utilize um PC ou notebook.</div>';
+}
+</script>
+
+<div id="feedbackMsg" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#181818;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-weight:bold;"></div>
+
+<div id="loadingSpinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);z-index:9998;align-items:center;justify-content:center;">
+    <div style="border:6px solid #eee;border-top:6px solid #2563eb;border-radius:50%;width:48px;height:48px;animation:spin 1s linear infinite;"></div>
+</div>
+<style>
+@keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
 
 <div id="modalAviso" style="
     position: fixed;
@@ -106,7 +123,6 @@
     <section>
         <h2>Opções de Acesso</h2>
         <div class="options">
-            <button id="purchaseRequestBtn">📝 Solicitações de Compras</button>
             <button id="materialRequestBtn">📦 Requisições de Materiais</button>
             <button id="materialRegisterBtn">➕ Cadastro de Materiais</button>
         </div>
@@ -120,15 +136,14 @@
             <button type="submit">Adicionar Material</button>
         </form>
 
-        <!-- Botão personalizado para importar CSV da rede -->
         <button type="button" id="importCsvFromNetwork" style="margin-top:10px;font-weight:bold;">
             📄 Importar CSV da Rede
         </button>
         <input type="file" id="importCsvInput" accept=".csv" style="display:none;">
         <span id="fileName">Nenhum arquivo escolhido</span>
-        <br>
-        <a id="networkFolderLink" href="file:///Y:/Matheus%20-%20Ferramentas" style="display:none;"></a>
-        <p style="margin-top:8px;color:#888;">Clique em "Importar CSV da Rede" para abrir a pasta de materiais e importar o arquivo CSV atualizado.</p>
+        <p style="margin-top:8px;color:#888;">
+            Para importar, abra a pasta de rede <b>Y:/Matheus - Ferramentas</b> no Windows Explorer e selecione o arquivo CSV aqui.
+        </p>
     </section>
 
     <section id="materialList">
@@ -140,6 +155,10 @@
             <input type="text" id="searchInput" placeholder="Pesquisar nome do material..." autocomplete="off">
             <button type="submit" id="searchBtn">🔍 Pesquisar</button>
             <button type="button" id="clearSearchBtn">❌ Limpar</button>
+            <br>
+            <small style="color:#888;">
+                Dica: Separe termos por vírgula para filtrar (ex: <b>parafuso, m10</b>)
+            </small>
         </form>
         <div class="actions" id="actionsArea">
             <button id="deleteAllBtn" class="danger-btn">🗑️ Excluir Todos</button>
@@ -168,10 +187,7 @@
 
 <script>
     document.getElementById('importCsvFromNetwork').onclick = function() {
-        document.getElementById('networkFolderLink').click();
-        setTimeout(function() {
-            document.getElementById('importCsvInput').click();
-        }, 1000);
+        document.getElementById('importCsvInput').click();
     };
     document.getElementById('importCsvInput').addEventListener('change', function(e) {
         var fileName = e.target.files[0] ? e.target.files[0].name : 'Nenhum arquivo escolhido';
