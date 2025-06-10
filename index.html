@@ -18,8 +18,9 @@ if (
 }
 </script>
 
+<!-- Feedback visual -->
 <div id="feedbackMsg" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#181818;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-weight:bold;"></div>
-
+<!-- Indicador de carregamento -->
 <div id="loadingSpinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);z-index:9998;align-items:center;justify-content:center;">
     <div style="border:6px solid #eee;border-top:6px solid #2563eb;border-radius:50%;width:48px;height:48px;animation:spin 1s linear infinite;"></div>
 </div>
@@ -136,6 +137,7 @@ if (
             <button type="submit">Adicionar Material</button>
         </form>
 
+        <!-- Botão personalizado para importar CSV da rede -->
         <button type="button" id="importCsvFromNetwork" style="margin-top:10px;font-weight:bold;">
             📄 Importar CSV da Rede
         </button>
