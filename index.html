@@ -4,188 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Sistema de Gestão de Materiais. Cadastro, controle, solicitações e requisições de materiais.">
-    <link rel="icon" href="favicon.png">
+    <link rel="icon" href="favicon.png" type="image/png">
     <title>Gestão de Materiais</title>
     <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
-<script>
-if (
-    window.innerWidth < 900 ||
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-) {
-    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#181818;color:#fff;font-size:1.5em;text-align:center;">Este sistema só pode ser acessado por computadores.<br>Por favor, utilize um PC ou notebook.</div>';
-}
-</script>
-<div id="feedbackMsg" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#181818;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-weight:bold;"></div>
-<div id="loadingSpinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);z-index:9998;align-items:center;justify-content:center;">
-    <div style="border:6px solid #eee;border-top:6px solid #2563eb;border-radius:50%;width:48px;height:48px;animation:spin 1s linear infinite;"></div>
-</div>
-<style>
-@keyframes spin { 100% { transform: rotate(360deg); } }
-</style>
-<div id="modalAviso" style="
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-">
-    <div style="
-        background: #181818;
-        color: #fff;
-        border-radius: 12px;
-        max-width: 340px;
-        width: 90%;
-        padding: 28px 18px 18px 18px;
-        box-shadow: 0 2px 16px rgba(0,0,0,0.4);
-        position: relative;
-        text-align: center;
-        font-family: Arial, sans-serif;
-    ">
-        <button id="fecharAviso" style="
-            position: absolute;
-            top: 10px; right: 14px;
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 20px;
-            cursor: pointer;
-        ">&times;</button>
-        <h2 style="margin: 0 0 8px 0; font-size: 2em; font-weight: bold;">Aviso</h2>
-        <div style="margin-bottom: 10px; font-size: 1.1em; color: #f43f5e; font-weight: bold;">
-            Colaboradores Máquinas Furlan
-        </div>
-        <div style="margin-bottom: 18px; color: #fff;">
-            Aviso a todos colaboradores, que este site foi desenvolvido apenas para aqueles que precisam de ajuda na hora de for encontrar código de um material específico, todos os cadastros de materiais foram retirados do banco de dados dos cadastros do DebX.
-        </div>
-        <button id="btnFecharAviso" style="
-            width: 100%;
-            background: #fff;
-            color: #181818;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 0;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background 0.2s;
-        ">Fechar</button>
+<div class="topbar">
+    <div class="logo">
+        <i class="fa-solid fa-building-columns"></i>
+        Gestão de Materiais
     </div>
 </div>
-<script>
-    document.getElementById('btnFecharAviso').onclick =
-    document.getElementById('fecharAviso').onclick = function() {
-        document.getElementById('modalAviso').style.display = 'none';
-    };
-    setTimeout(function() {
-        document.getElementById('modalAviso').style.display = 'none';
-    }, 10000);
-</script>
 
-<header id="siteHeader" style="display: none;">
-    <h1>Bem-vindo a Gestão de Materiais</h1>
-    <button id="themeToggle">Alternar Tema</button>
-</header>
+<nav class="tabsbar">
+   <ul>
+    <li><a href="#" id="abaRecebimentos" class="active" aria-label="Aba Lista de Materiais"><i class="fa fa-box"></i> Lista de Materiais</a></li>
+   </ul>
+</nav>
+<div class="main-content">
 
-<section id="loginScreen" class="login-screen">
-    <div class="login-card">
-        <h2>Login</h2>
-        <form id="loginForm">
-            <input type="text" id="loginUsername" placeholder="Usuário" required autocomplete="username">
-            <input type="password" id="loginPassword" placeholder="Senha" required autocomplete="current-password">
-            <button type="submit">Entrar</button>
-            <div id="loginError" class="login-error"></div>
-        </form>
+    <div id="loader" role="status" aria-live="polite" aria-label="Carregando dados">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="border:6px solid #f3f3f3;border-top:6px solid #2563eb;border-radius:50%;width:48px;height:48px;animation:spin 1s linear infinite;"></div>
+            <span style="margin-top:18px;color:#fff;font-size:1.1em;">Carregando dados...</span>
+        </div>
     </div>
-    <footer style="
-        position: fixed;
-        right: 32px;
-        bottom: 24px;
-        color: #fff;
-        font-size: 1em;
-        z-index: 100;
-        text-align: right;
-        pointer-events: none;
-        user-select: none;
-    ">
-        © 2025 Ferreira - Divisão Equipamentos Indiretos.
-    </footer>
-</section>
-<main style="display: none;">
-    <section>
-        <h2>Opções de Acesso</h2>
-        <div class="options">
-            <button id="materialRequestBtn">📦 Requisições de Materiais</button>
-            <button id="materialRegisterBtn">➕ Cadastro de Materiais</button>
+
+    <div style="display:flex;justify-content:flex-start;">
+        <div class="search-box-local">
+            <label for="searchGlobalInput" style="position:absolute;left:-9999px;">Buscar materiais</label>
+            <input id="searchGlobalInput" 
+                   type="text" 
+                   placeholder="Buscar por código ou nome (ex: paraf,m20 para abreviações e múltiplos termos)"
+                   aria-label="Campo de busca por código ou nome do material"
+                   tabindex="1"
+                   autocomplete="off"
+            >
+            <button id="btnGlobalSearch" aria-label="Buscar materiais" tabindex="2">
+                <i class="fa fa-search" aria-hidden="true"></i>
+            </button>
+            <button id="btnClearSearch" aria-label="Limpar pesquisa" tabindex="3">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </button>
         </div>
-    </section>
-    <section id="materialRegistration" aria-label="Cadastro de Material" style="display:none;">
-        <h2>Cadastro de Material</h2>
-        <form id="materialForm">
-            <input type="text" id="materialCode" placeholder="Código do Material" required pattern="[A-Za-z0-9.]+" title="Somente letras, números e pontos.">
-            <input type="text" id="materialName" placeholder="Nome do Material" required>
-            <button type="submit">Adicionar Material</button>
-        </form>
-        <button type="button" id="importCsvFromNetwork" style="margin-top:10px;font-weight:bold;">
-            📄 Importar CSV da Rede
-        </button>
-        <input type="file" id="importCsvInput" accept=".csv" style="display:none;">
-        <span id="fileName">Nenhum arquivo escolhido</span>
-        <p style="margin-top:8px;color:#888;">
-            Para importar, abra a pasta de rede <b>\\10.0.0.4\publico_2\Matheus - Ferramentas</b> no Windows Explorer e selecione o arquivo CSV aqui.
-        </p>
-    </section>
-    <section id="materialList">
-        <h2>Lista de Materiais</h2>
-        <div id="materialsCount" class="materials-count">
-            Total de materiais: 0
-        </div>
-        <form id="searchForm" class="search-form">
-            <input type="text" id="searchInput" placeholder="Pesquisar nome do material..." autocomplete="off">
-            <button type="submit" id="searchBtn">🔍 Pesquisar</button>
-            <button type="button" id="clearSearchBtn">❌ Limpar</button>
-            <br>
-            <small style="color:#888;">
-                Dica: Separe termos por vírgula para filtrar (ex: <b>parafuso, m10</b>)
-            </small>
-        </form>
-        <div class="actions" id="actionsArea">
-            <button id="deleteAllBtn" class="danger-btn">🗑️ Excluir Todos</button>
-            <button id="deleteAllInativosBtn" class="danger-btn">🗑️ Excluir "Inativos"</button>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Nome</th>
-                    <th>Data</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="materialsTableBody"></tbody>
-        </table>
-        <div id="pagination" class="pagination">
-            <button id="prevPageBtn" style="display:none;">⬅️ Anterior</button>
-            <span id="pageInfo"></span>
-            <button id="nextPageBtn" style="display:none;">Próxima ➡️</button>
-        </div>
-    </section>
-    <button id="logoutBtn" class="logout-btn">Sair</button>
-    <div id="toast" class="toast"></div>
-</main>
+    </div>
+
+    <div id="mensagemAviso" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#2563eb;color:#fff;padding:14px 32px;border-radius:8px;z-index:9999;font-size:1.1em;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.15);" role="alert" aria-live="polite"></div>
+
+    <div id="sr-feedback" style="position:absolute;left:-9999px;" aria-live="polite"></div>
+
+    <div id="recebimentosSection" class="card">
+        <div id="listaMateriais"></div>
+    </div>
+</div>
+
+<footer style="background:#1e293b;color:#fff;text-align:center;padding:16px 0;margin-top:32px;font-size:0.95em;">
+    <div>
+        &copy; 2025 Gestão de Materiais &mdash; Desenvolvido por Matheus Ferreira.<br>
+        <a href="https://furlangrupo.slack.com/archives/C0937ES23HS" target="_blank" rel="noopener noreferrer" style="color:#60a5fa;text-decoration:underline;">Contato</a> |
+        <span>Versão 1.0</span>
+    </div>
+</footer>
+
+<script src="assets/main.js"></script>
 <script>
-    document.getElementById('importCsvFromNetwork').onclick = function() {
-        document.getElementById('importCsvInput').click();
-    };
-    document.getElementById('importCsvInput').addEventListener('change', function(e) {
-        var fileName = e.target.files[0] ? e.target.files[0].name : 'Nenhum arquivo escolhido';
-        document.getElementById('fileName').textContent = fileName;
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('searchGlobalInput');
+    const btnClear = document.getElementById('btnClearSearch');
+    if (btnClear && input) {
+        btnClear.addEventListener('click', function() {
+            input.value = '';
+            input.focus();
+            if (typeof filtrarMateriais === 'function') {
+                filtrarMateriais('', 1); 
+            }
+        });
+    }
+});
 </script>
-<script src="js/main.js"></script>
 </body>
 </html>
